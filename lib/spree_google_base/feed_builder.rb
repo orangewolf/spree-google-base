@@ -102,7 +102,7 @@ module SpreeGoogleBase
     
     def build_product(xml, product)
       xml.item do
-        xml.tag!('link', product_url(product.permalink, :host => domain))
+        xml.tag!('link', product_url(product.slug, :host => domain))
         build_images(xml, product)
         
         GOOGLE_BASE_ATTR_MAP.each do |k, v|
@@ -131,7 +131,7 @@ module SpreeGoogleBase
 
     def image_url product, image
       base_url = image.attachment.url(product.google_base_image_size)
-      base_url = "#{domain}/#{base_url}" unless Spree::Config[:use_s3]
+      base_url = "#{domain}/#{base_url}" unless Spree::Image.attachment_definitions[:attachment][:storage] == :s3
 
       base_url
     end

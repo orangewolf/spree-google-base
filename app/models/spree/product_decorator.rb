@@ -19,18 +19,8 @@ module Spree
     end
 
     def google_base_brand
-      # Taken from github.com/romul/spree-solr-search
-      # app/models/spree/product_decorator.rb
-      #
-      pp = Spree::ProductProperty.first(
-        :joins => :property, 
-        :conditions => {
-          :product_id => self.id,
-          :spree_properties => {:name => 'brand'}
-        }
-      )
-
-      pp ? pp.value : nil
+      property_name = "Brand" # WHY THIS IS CALLED BRAND
+      self.property(property_name)
     end
 
     def google_base_product_type

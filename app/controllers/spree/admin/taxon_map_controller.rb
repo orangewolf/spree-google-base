@@ -1,7 +1,7 @@
 class Spree::Admin::TaxonMapController < Spree::Admin::ResourceController
 
   def index
-    @taxons = Spree::Taxon.find(:all)
+    @taxons = Spree::Taxon.all
     @taxons.each do |taxon|
       if !taxon.taxon_map
         taxon_map = Spree::TaxonMap.new(:product_type => '', :taxon_id => taxon.id, :priority => 0)
@@ -12,7 +12,7 @@ class Spree::Admin::TaxonMapController < Spree::Admin::ResourceController
   end
 
   def create
-    Spree::TaxonMap.delete(Spree::TaxonMap.find(:all))
+    Spree::TaxonMap.delete_all
     params[:tax_id].each do |k, v|
       taxon_map = Spree::TaxonMap.new(:product_type => v, :taxon_id => k, :priority => params[:priority][k].to_i || 0)
       taxon_map.save
