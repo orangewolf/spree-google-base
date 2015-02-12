@@ -19,7 +19,7 @@ module Spree
     end
 
     def google_base_brand
-      property_name = "Brand" # WHY THIS IS CALLED BRAND
+      property_name = "brand"
       self.property(property_name)
     end
 
