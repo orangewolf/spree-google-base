@@ -2,10 +2,6 @@ module Spree
   Product.class_eval do
     scope :google_base_scope, -> { preload(:taxons, {:master => :images}) }
     
-    def google_base_description
-      description
-    end
-    
     def google_base_condition
       'new'
     end
