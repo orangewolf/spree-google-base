@@ -5,7 +5,13 @@ module SpreeGoogleBase
     include Spree::Core::Engine.routes.url_helpers
     
     attr_reader :store, :domain, :title
-    
+
+    def self.generate
+      self.builders.each do |builder|
+        builder.generate_store
+      end
+    end
+
     def self.generate_and_transfer
       self.builders.each do |builder|
         builder.generate_and_transfer_store
@@ -47,13 +53,16 @@ module SpreeGoogleBase
       end
     end
 
-    def generate_and_transfer_store
+    def generate_store
       delete_xml_if_exists
 
-      File.open(path, 'w') do |file| 
+      File.open(path, 'w') do |file|
         generate_xml file
       end
+    end
 
+    def generate_and_transfer_store
+      generate_store
       transfer_xml
       cleanup_xml
     end
