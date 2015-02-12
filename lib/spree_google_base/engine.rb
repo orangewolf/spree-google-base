@@ -9,8 +9,7 @@ module SpreeGoogleBase
       
       # See http://support.google.com/merchants/bin/answer.py?hl=en&answer=188494#US for all other fields
       SpreeGoogleBase::FeedBuilder::GOOGLE_BASE_ATTR_MAP = [
-        ['g:id', 'id'],
-        ['g:mpn', 'sku'],
+        ['g:id', 'sku'],
         ['title', 'name'],
         ['description', 'google_base_description'],
         ['g:price', 'price'],
