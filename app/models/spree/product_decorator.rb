@@ -7,7 +7,7 @@ module Spree
     end
     
     def google_base_availability
-      'in stock'
+      total_on_hand > 0 ? 'in stock' : 'out of stock'
     end
 
     def google_base_image_size
@@ -15,7 +15,7 @@ module Spree
     end
 
     def google_base_brand
-      property_name = "brand"
+      property_name = 'brand'
       self.property(property_name)
     end
 
