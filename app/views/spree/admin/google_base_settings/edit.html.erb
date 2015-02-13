@@ -8,7 +8,7 @@
   <div id="preferences" data-hook>
       <fieldset class="general no-border-top">
           <% [:title, :public_domain, :description, :ftp_username,
-              :ftp_password, :enable_taxon_mapping].each do |setting| %>
+              :ftp_password, :enable_taxon_mapping, :enable_additional_images].each do |setting| %>
             <div class="field">
                 <%= setting_field(setting) %>
             </div>
