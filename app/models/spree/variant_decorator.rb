@@ -1,7 +1,13 @@
 module Spree
   Variant.class_eval do
     scope :google_base_scope, -> { preload({:product => :taxons}, :images) }
-    
+
+    def google_base_title
+      title = name
+      title += " - #{options_text}" if option_values.exists?
+      "#{title}".strip
+    end
+
     def google_base_condition
       'new'
     end
