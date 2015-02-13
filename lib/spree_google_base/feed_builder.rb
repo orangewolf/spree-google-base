@@ -52,9 +52,9 @@ module SpreeGoogleBase
     
     def ar_scope
       if @store
-        Spree::Product.by_store(@store).google_base_scope
+        Spree::Variant.by_store(@store).google_base_scope
       else
-        Spree::Product.google_base_scope
+        Spree::Variant.google_base_scope
       end
     end
 
@@ -92,8 +92,8 @@ module SpreeGoogleBase
         xml.channel do
           build_meta(xml)
           
-          ar_scope.find_each(:batch_size => 300) do |product|
-            build_product(xml, product)
+          ar_scope.find_each(:batch_size => 300) do |variant|
+            build_variant(xml, variant) unless (variant.is_master? and variant.product.has_variants?)
           end
         end
       end
@@ -114,37 +114,37 @@ module SpreeGoogleBase
       File.delete(path)
     end
     
-    def build_product(xml, product)
+    def build_variant(xml, variant)
       xml.item do
-        xml.tag!('g:link', product_url(product.slug, :host => domain))
-        build_images(xml, product)
+        xml.tag!('g:link', product_url(variant.slug, :host => domain))
+        build_images(xml, variant)
         
         GOOGLE_BASE_ATTR_MAP.each do |k, v|
-          value = product.send(v)
+          value = variant.send(v)
           xml.tag!(k, value.to_s) if value.present?
         end
       end
     end
     
-    def build_images(xml, product)
+    def build_images(xml, variant)
       if Spree::GoogleBase::Config[:enable_additional_images]
-        main_image, *more_images = product.master.images
+        main_image, *more_images = variant.images
       else
-        main_image = product.master.images.first
+        main_image = variant.images.first
       end
 
       return unless main_image
-      xml.tag!('g:image_link', image_url(product, main_image))
+      xml.tag!('g:image_link', image_url(variant, main_image))
 
       if Spree::GoogleBase::Config[:enable_additional_images]
         more_images.each do |image|
-          xml.tag!('g:additional_image_link', image_url(product, image))
+          xml.tag!('g:additional_image_link', image_url(variant, image))
         end
       end
     end
 
-    def image_url product, image
-      base_url = image.attachment.url(product.google_base_image_size)
+    def image_url variant, image
+      base_url = image.attachment.url(variant.google_base_image_size)
       base_url = "http://#{domain}#{base_url}" unless Spree::Image.attachment_definitions[:attachment][:storage] == :s3
 
       base_url
