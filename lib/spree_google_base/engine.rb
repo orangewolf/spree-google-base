@@ -20,7 +20,9 @@ module SpreeGoogleBase
         ['g:quantity','total_on_hand'],
         ['g:availability', 'google_base_availability'],
         ['g:shipping_weight', 'weight'],
-        ['g:item_group_id', 'google_base_item_group_id']
+        ['g:item_group_id', 'google_base_item_group_id'],
+        ['g:color', 'google_base_color'],
+        ['g:size', 'google_base_size'],
       ]
     end
 

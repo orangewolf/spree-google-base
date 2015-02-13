@@ -40,17 +40,30 @@ module Spree
     end
 
     def google_base_product_type
-      product_type = ''
       product.taxons.each do |taxon|
         if taxon.root.name == 'Category'
-          product_type = taxon.self_and_ancestors.map(&:name).join(" > ")
+          return taxon.self_and_ancestors.map(&:name).join(" > ")
         end
       end
-      product_type
+      ''
     end
 
     def google_base_item_group_id
       product.id if product.has_variants?
+    end
+
+    def google_base_color
+      option_values.each do |ov|
+        return ov.presentation if ov.option_type.name =~ /color/i
+      end
+      ''
+    end
+
+    def google_base_size
+      option_values.each do |ov|
+        return ov.presentation if ov.option_type.name =~ /(length|size)/i
+      end
+      ''
     end
   end
 end
