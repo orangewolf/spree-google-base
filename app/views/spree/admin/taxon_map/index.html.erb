@@ -1,35 +1,29 @@
 <% content_for :page_title do %>
-  <%= Spree.t('google_base.taxonomy_mapping') %>
+  <%= Spree.t(:taxonomy_mapping, :scope => :google_base) %>
 <% end %>
 
-<div>
-    <%= Spree.t('google_base.more_info') %>:
-    <a href="http://www.google.com/support/merchants/bin/answer.py?hl=en&answer=160081" target="_blank"><%= Spree.t('google_base.google_help_article') %></a>
-</div>
+<div id="google_base_map">
 
-<%= form_for :taxon_maper do |f| %>
+  <a href="http://www.google.com/support/merchants/bin/answer.py?hl=en&answer=160081" target="_blank">Google Taxonomy Listings</a>
 
-  <table class="index" data-hook>
-      <thead>
+  <%= form_for :taxon_maper do |f| %>
+    <table class="table">
       <tr>
-          <th><%= Spree.t(:taxon) %></th>
-          <th><%= Spree.t('google_base.priority') %></th>
-          <th><%= Spree.t('google_base.google_category') %></th>
+        <th>Taxon</th>
+        <th>Priority</th>
+        <th>Category</th>
       </tr>
-      </thead>
-      <tbody>
       <% @taxons.each do |taxon| -%>
-        <tr id="<%= spree_dom_id taxon %>" class="<%= cycle('odd', 'even')%>">
-            <td><%= taxon.name %></td>
-            <td><%= text_field(:priority, taxon.id, :value => taxon.taxon_map.priority.to_s, :class => 'priority') %></td>
-            <td><%= text_field(:tax_id, taxon.id, :value => taxon.taxon_map.product_type, :class => 'category') %></td>
+        <tr>
+          <td><%= taxon.name %></td>
+          <td><%= text_field(:priority, taxon.id, :value => taxon.taxon_map.priority.to_s, :class => 'priority') %></td>
+          <td><%= text_field(:tax_id, taxon.id, :value => taxon.taxon_map.product_type, :class => 'category') %></td>
         </tr>
-      <% end %>
-      </tbody>
-  </table>
+      <% end -%>
+    </table>
 
-  <div class="clearfix"></div>
-  <div class="form-buttons" data-hook="buttons">
-      <%= button Spree.t('actions.update'), 'refresh' %>
-  </div>
-<% end %>
+    <div class="form-actions" data-hook="buttons">
+      <%= button Spree.t('actions.update'), 'update' %>
+    </div>
+  <% end %>
+</div>

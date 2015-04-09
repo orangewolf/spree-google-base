@@ -39,7 +39,8 @@ CRONJOBS
 
 There are two options to regulate google base product update:
 
-A) Setup cronjobs to run 'rake spree_google_base:generate' and 'rake spree_google_base:transfer'
+A) Try to run `rake spree_google_base:generate_test_file`
+B) Setup cronjobs to run `rake spree_google_base:generate_and_transfer`
 
 
 Development of this extension is sponsored by [End Point][1] and by [FCP Groton][2].

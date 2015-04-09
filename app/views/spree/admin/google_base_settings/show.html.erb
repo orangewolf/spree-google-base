@@ -1,0 +1,19 @@
+<% content_for :page_title do %>
+  <%= Spree.t("google_base.export_settings") %>
+<% end %>
+
+<table class="table">
+  <% [:title, :public_domain, :description, :ftp_username].each do |setting| %>
+    <%= setting_presentation_row(setting) %>
+  <% end %>
+  <%= setting_presentation_row(:ftp_password, true) %>
+  <%= setting_presentation_row(:enable_taxon_mapping) %>
+</table>
+
+
+<% content_for :page_actions do %>
+  <%= button_link_to Spree.t("edit"), edit_admin_google_base_settings_path, icon: 'edit' %>
+  <% if Spree::GoogleBase::Config[:enable_taxon_mapping] %>
+    <%= button_link_to Spree.t("google_base.manage_taxon_mapping"), admin_taxon_map_index_path, icon: 'edit' %>
+  <% end %>
+<% end %>

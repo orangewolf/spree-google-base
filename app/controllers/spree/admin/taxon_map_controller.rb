@@ -1,4 +1,4 @@
-class Spree::Admin::TaxonMapController < Spree::Admin::ResourceController
+class Spree::Admin::TaxonMapController < Spree::Admin::BaseController
 
   def index
     @taxons = Spree::Taxon.all

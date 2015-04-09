@@ -4,14 +4,8 @@ module SpreeGoogleBase
   class FeedBuilder
     include Spree::Core::Engine.routes.url_helpers
     
-    attr_reader :store, :domain, :title, :description
-
-    def self.generate
-      self.builders.each do |builder|
-        builder.generate_store
-      end
-    end
-
+    attr_reader :store, :domain, :title
+    
     def self.generate_and_transfer
       self.builders.each do |builder|
         builder.generate_and_transfer_store
@@ -35,39 +29,31 @@ module SpreeGoogleBase
     end
 
     def initialize(opts = {})
-      @title = Spree::GoogleBase::Config[:title]
-      @domain = Spree::GoogleBase::Config[:public_domain]
-      @description = Spree::GoogleBase::Config[:description]
-      if opts[:store].present?
-        @store = opts[:store]
-        @title = @store.name unless @title.present?
-        @domain = @store.domains.match(/[\w\.]+/).to_s unless @domain.present?
-      else
-        @title = Spree::Store.default.name unless @title.present?
-        @domain = opts[:path].present? ? opts[:path] : Spree::Store.default.url unless @domain.present?
-      end
       raise "Please pass a public address as the second argument, or configure :public_path in Spree::GoogleBase::Config" unless
-          @domain.present?
+        opts[:store].present? or (opts[:path].present? or Spree::GoogleBase::Config[:public_domain])
+
+      @store = opts[:store] if opts[:store].present?
+      @title = @store ? @store.name : Spree::GoogleBase::Config[:store_name]
+      
+      @domain = @store ? @store.domains.match(/[\w\.]+/).to_s : opts[:path]
+      @domain ||= Spree::GoogleBase::Config[:public_domain]
     end
     
     def ar_scope
       if @store
-        Spree::Variant.by_store(@store).google_base_scope
+        Spree::Product.by_store(@store).google_base_scope
       else
-        Spree::Variant.google_base_scope
-      end
-    end
-
-    def generate_store
-      delete_xml_if_exists
-
-      File.open(path, 'w') do |file|
-        generate_xml file
+        Spree::Product.google_base_scope
       end
     end
 
     def generate_and_transfer_store
-      generate_store
+      delete_xml_if_exists
+
+      File.open(path, 'w') do |file| 
+        generate_xml file
+      end
+
       transfer_xml
       cleanup_xml
     end
@@ -92,8 +78,8 @@ module SpreeGoogleBase
         xml.channel do
           build_meta(xml)
           
-          ar_scope.find_each(:batch_size => 300) do |variant|
-            build_variant(xml, variant) unless (variant.is_master? and variant.product.has_variants?)
+          ar_scope.find_each(:batch_size => 300) do |product|
+            build_product(xml, product)
           end
         end
       end
@@ -114,46 +100,47 @@ module SpreeGoogleBase
       File.delete(path)
     end
     
-    def build_variant(xml, variant)
+    def build_product(xml, product)
       xml.item do
-        xml.tag!('g:link', product_url(variant.slug, :host => domain))
-        build_images(xml, variant)
+        xml.tag!('link', product_url(product.slug, :host => domain))
+        build_images(xml, product)
         
         GOOGLE_BASE_ATTR_MAP.each do |k, v|
-          value = variant.send(v)
+          value = product.send(v)
           xml.tag!(k, value.to_s) if value.present?
         end
       end
     end
     
-    def build_images(xml, variant)
+    def build_images(xml, product)
       if Spree::GoogleBase::Config[:enable_additional_images]
-        main_image, *more_images = variant.images
+        main_image, *more_images = product.master.images
       else
-        main_image = variant.images.first
+        main_image = product.master.images.first
       end
 
       return unless main_image
-      xml.tag!('g:image_link', image_url(variant, main_image))
+      xml.tag!('g:image_link', image_url(product, main_image))
 
       if Spree::GoogleBase::Config[:enable_additional_images]
         more_images.each do |image|
-          xml.tag!('g:additional_image_link', image_url(variant, image))
+          xml.tag!('g:additional_image_link', image_url(product, image))
         end
       end
     end
 
-    def image_url variant, image
-      base_url = image.attachment.url(variant.google_base_image_size)
-      base_url = "http://#{domain}#{base_url}" unless Spree::Image.attachment_definitions[:attachment][:storage] == :s3
+    def image_url product, image
+      base_url = image.attachment.url(product.google_base_image_size)
+      if Spree::Image.attachment_definitions[:attachment][:storage] != :s3
+        base_url = "#{domain}/#{base_url}"
+      end
 
       base_url
     end
 
     def build_meta(xml)
-      xml.title title if title.present?
-      xml.link url_for :controller => 'spree/home', :host => domain, :only_path => false
-      xml.description description if description.present?
+      xml.title @title
+      xml.link @domain
     end
     
   end

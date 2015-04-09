@@ -1,5 +1,6 @@
 class Spree::Admin::GoogleBaseSettingsController < Spree::Admin::BaseController
   helper 'spree/admin/google_base'
+  helper_method :collection_url
   
   def update
     params.each do |name, value|
@@ -12,6 +13,10 @@ class Spree::Admin::GoogleBaseSettingsController < Spree::Admin::BaseController
         redirect_to edit_admin_google_base_settings_path
       }
     end
+  end
+
+  def collection_url
+    admin_google_base_settings_url
   end
 
 end

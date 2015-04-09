@@ -2,6 +2,10 @@ module Spree
   Product.class_eval do
     scope :google_base_scope, -> { preload(:taxons, {:master => :images}) }
     
+    def google_base_description
+      description
+    end
+    
     def google_base_condition
       'new'
     end
@@ -15,32 +19,39 @@ module Spree
     end
 
     def google_base_brand
-      property_name = 'brand'
-      self.property(property_name)
-    end
+      # Taken from github.com/romul/spree-solr-search
+      # app/models/spree/product_decorator.rb
+      #
+      pp = Spree::ProductProperty.joins(:property)
+                                 .where(:product_id => self.id)
+                                 .where(:spree_properties => {:name => 'brand'})
+                                 .first
 
-    def google_base_product_category
-      return google_base_product_type unless Spree::GoogleBase::Config[:enable_taxon_mapping]
-
-      product_category = ''
-      priority = -1000
-      taxons.each do |taxon|
-        if taxon.taxon_map && taxon.taxon_map.priority > priority
-          priority = taxon.taxon_map.priority
-          product_category = taxon.taxon_map.product_type
-        end
-      end
-      product_category
+      pp ? pp.value : nil
     end
 
     def google_base_product_type
+      return google_base_taxon_type unless Spree::GoogleBase::Config[:enable_taxon_mapping]
+
       product_type = ''
-      taxons.each do |taxon|
-        if taxon.root.name == 'Category'
-          product_type = taxon.self_and_ancestors.map(&:name).join(" > ")
+      priority = -1000
+      self.taxons.each do |taxon|
+        if taxon.taxon_map && taxon.taxon_map.priority > priority
+          priority = taxon.taxon_map.priority
+          product_type = taxon.taxon_map.product_type
         end
       end
       product_type
+    end
+
+    def google_base_taxon_type
+      return unless taxons.any?
+
+      taxons[0].self_and_ancestors.map(&:name).join(" > ")
+    end
+
+    def total_count_on_hand
+      stock_items.sum(:count_on_hand)
     end
   end
 end
