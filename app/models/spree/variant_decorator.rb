@@ -1,17 +1,21 @@
 module Spree
-  Product.class_eval do
-    scope :google_base_scope, -> { preload(:taxons, {:master => :images}) }
-    
+  Variant.class_eval do
+    scope :google_base_scope, -> { preload({:product => :taxons}, {:product => {:master => :images}}) }
+
     def google_base_description
       description
     end
-    
+
     def google_base_condition
       'new'
     end
-    
+
     def google_base_availability
-      'in stock'
+      if self.total_count_on_hand > 0
+        'in stock'
+      else
+        'out of stock'
+      end
     end
 
     def google_base_image_size
@@ -23,8 +27,8 @@ module Spree
       # app/models/spree/product_decorator.rb
       #
       pp = Spree::ProductProperty.joins(:property)
-                                 .where(:product_id => self.id)
-                                 .where(:spree_properties => {:name => 'brand'})
+                                 .where(:product_id => self.product_id)
+                                 .where(:spree_properties => {:name => 'Brand'})
                                  .first
 
       pp ? pp.value : nil
@@ -45,9 +49,9 @@ module Spree
     end
 
     def google_base_taxon_type
-      return unless taxons.any?
+      return unless product.taxons.any?
 
-      taxons[0].self_and_ancestors.map(&:name).join(" > ")
+      product.taxons[0].self_and_ancestors.map(&:name).join(" > ")
     end
 
     def total_count_on_hand
