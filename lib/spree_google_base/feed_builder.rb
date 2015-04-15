@@ -4,9 +4,9 @@ require 'csv'
 module SpreeGoogleBase
   class FeedBuilder
     include Spree::Core::Engine.routes.url_helpers
-    
+
     attr_reader :store, :domain, :title
-    
+
     def self.generate_and_transfer
       self.builders.each do |builder|
         builder.generate_and_transfer_store
@@ -45,17 +45,17 @@ module SpreeGoogleBase
 
       @store = opts[:store] if opts[:store].present?
       @title = @store ? @store.name : Spree::GoogleBase::Config[:store_name]
-      
+
       @domain = @store ? @store.domains.match(/[\w\.]+/).to_s : opts[:path]
       @domain ||= Spree::GoogleBase::Config[:public_domain]
       @domain = "http://" + @domain unless @domain.starts_with?("http")
     end
-    
+
     def ar_scope
       if @store
-        Spree::Product.by_store(@store).google_base_scope
+        Spree::Variant.by_store(@store).google_base_scope
       else
-        Spree::Product.google_base_scope
+        Spree::Variant.google_base_scope
       end
     end
 
@@ -149,19 +149,19 @@ module SpreeGoogleBase
       return attr_array
     end
 
-    def build_images(xml, product)
+    def build_images(xml, variant)
       if Spree::GoogleBase::Config[:enable_additional_images]
-        main_image, *more_images = product.master.images
+        main_image, *more_images = variant.product.master.images
       else
-        main_image = product.master.images.first
+        main_image = variant.product.master.images.first
       end
 
       return unless main_image
-      xml.tag!('g:image_link', image_url(product, main_image))
+      xml.tag!('g:image_link', image_url(variant, main_image))
 
       if Spree::GoogleBase::Config[:enable_additional_images]
         more_images.each do |image|
-          xml.tag!('g:additional_image_link', image_url(product, image))
+          xml.tag!('g:additional_image_link', image_url(variant, image))
         end
       end
     end
