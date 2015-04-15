@@ -1,4 +1,5 @@
 require 'net/ftp'
+require 'csv'
 
 module SpreeGoogleBase
   class FeedBuilder
@@ -15,8 +16,17 @@ module SpreeGoogleBase
     def self.generate_test_file(filename)
       exporter = new
       exporter.instance_variable_set("@filename", filename)
-      File.open(exporter.path, "w") do |file|
-        exporter.generate_xml file
+      format = filename.split('.')[-1]
+      if format == "xml"
+        File.open(exporter.path, "w") do |file|
+          exporter.generate_xml file
+        end
+      elsif format == "txt"
+        File.open(exporter.path, "w") do |file|
+          file.write(exporter.generate_txt)
+        end
+      else
+        raise "Invalid format specified! Supported formats: xml, txt"
       end
       exporter.path
     end
@@ -84,41 +94,61 @@ module SpreeGoogleBase
       xml.rss(:version => '2.0', :"xmlns:g" => "http://base.google.com/ns/1.0") do
         xml.channel do
           build_meta(xml)
-          
+
           ar_scope.find_each(:batch_size => 300) do |product|
-            build_product(xml, product)
+            build_product_xml(xml, product)
           end
         end
       end
     end
-    
+
+    def generate_txt
+      csv_string = CSV.generate(col_sep: "\t") do |csv|
+        # Header row
+        csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] }
+        # Products
+        ar_scope.find_each(:batch_size => 300) do |product|
+          csv << build_product_txt(product)
+        end
+      end
+    end
+
     def transfer_xml
       raise "Please configure your Google Base :ftp_username and :ftp_password by configuring Spree::GoogleBase::Config" unless
         Spree::GoogleBase::Config[:ftp_username] and Spree::GoogleBase::Config[:ftp_password]
-      
+
       ftp = Net::FTP.new('uploads.google.com')
       ftp.passive = true
       ftp.login(Spree::GoogleBase::Config[:ftp_username], Spree::GoogleBase::Config[:ftp_password])
       ftp.put(path, filename)
       ftp.quit
     end
-    
+
     def cleanup_xml
       File.delete(path)
     end
-    
-    def build_product(xml, product)
+
+    def build_product_xml(xml, product)
       xml.item do
         xml.tag!('link', product_url(product.slug, :host => domain))
         build_images(xml, product)
-        
+
         GOOGLE_BASE_ATTR_MAP.each do |k, v|
           value = product.send(v)
           xml.tag!(k, value.to_s) if value.present?
         end
       end
     end
-    
+
+    def build_product_txt(product)
+      attr_array = []
+      GOOGLE_BASE_ATTR_MAP.each do |k, v|
+        value = product.send(v)
+        attr_array << value
+      end
+      return attr_array
+    end
+
     def build_images(xml, product)
       if Spree::GoogleBase::Config[:enable_additional_images]
         main_image, *more_images = product.master.images
