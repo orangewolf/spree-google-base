@@ -62,14 +62,14 @@ module SpreeGoogleBase
     def generate_and_transfer_store
       delete_xml_if_exists
 
-      File.open(path, 'w') do |file| 
+      File.open(path, 'w') do |file|
         generate_xml file
       end
 
       transfer_xml
       cleanup_xml
     end
-    
+
     def path
       file_path = Rails.root.join('tmp')
       if defined?(Apartment)
@@ -78,7 +78,7 @@ module SpreeGoogleBase
       end
       file_path.join(filename)
     end
-    
+
     def filename
       @filename ||= "google_base_v#{@store.try(:code)}.xml"
     end
@@ -95,8 +95,8 @@ module SpreeGoogleBase
         xml.channel do
           build_meta(xml)
 
-          ar_scope.find_each(:batch_size => 300) do |product|
-            build_product_xml(xml, product)
+          ar_scope.find_each(:batch_size => 300) do |variant|
+            build_variant_xml(xml, variant)
           end
         end
       end
@@ -105,10 +105,10 @@ module SpreeGoogleBase
     def generate_txt
       csv_string = CSV.generate(col_sep: "\t") do |csv|
         # Header row
-        csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] }
-        # Products
-        ar_scope.find_each(:batch_size => 300) do |product|
-          csv << build_product_txt(product)
+        csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + ["link", "image_link", "additional_image_link"]
+        # variants
+        ar_scope.find_each(:batch_size => 300) do |variant|
+          csv << build_variant_txt(variant)
         end
       end
     end
@@ -128,28 +128,30 @@ module SpreeGoogleBase
       File.delete(path)
     end
 
-    def build_product_xml(xml, product)
+    def build_variant_xml(xml, variant)
       xml.item do
-        xml.tag!('link', product_url(product.slug, :host => domain))
-        build_images(xml, product)
+        xml.tag!('link', product_url(variant.slug, :host => domain))
+        build_images_xml(xml, variant)
 
         GOOGLE_BASE_ATTR_MAP.each do |k, v|
-          value = product.send(v)
+          value = variant.send(v)
           xml.tag!(k, value.to_s) if value.present?
         end
       end
     end
 
-    def build_product_txt(product)
+    def build_variant_txt(variant)
       attr_array = []
       GOOGLE_BASE_ATTR_MAP.each do |k, v|
-        value = product.send(v)
+        value = variant.send(v)
         attr_array << value
       end
+      attr_array << product_url(variant.slug, :host => domain)
+      attr_array.concat(build_images_txt(variant))
       return attr_array
     end
 
-    def build_images(xml, variant)
+    def build_images_xml(xml, variant)
       if Spree::GoogleBase::Config[:enable_additional_images]
         main_image, *more_images = variant.product.master.images
       else
@@ -166,8 +168,29 @@ module SpreeGoogleBase
       end
     end
 
-    def image_url product, image
-      base_url = image.attachment.url(product.google_base_image_size)
+    def build_images_txt(variant)
+      images = []
+      if Spree::GoogleBase::Config[:enable_additional_images]
+        main_image, *more_images = variant.product.master.images
+      else
+        main_image = variant.product.master.images.first
+      end
+
+      return unless main_image
+      images << image_url(variant, main_image)
+
+      if Spree::GoogleBase::Config[:enable_additional_images]
+        additional_images = []
+        more_images.each do |image|
+          additional_images << image_url(variant, image)
+        end
+        images << additional_images.join(',')
+      end
+      return images
+    end
+
+    def image_url(variant, image)
+      base_url = image.attachment.url(variant.google_base_image_size)
       if Spree::Image.attachment_definitions[:attachment][:storage] != :s3
         base_url = "#{domain}#{base_url}"
       end
@@ -179,6 +202,6 @@ module SpreeGoogleBase
       xml.title @title
       xml.link @domain
     end
-    
+
   end
 end
