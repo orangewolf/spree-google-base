@@ -39,7 +39,7 @@ module Spree
 
       product_type = ''
       priority = -1000
-      self.taxons.each do |taxon|
+      product.taxons.each do |taxon|
         if taxon.taxon_map && taxon.taxon_map.priority > priority
           priority = taxon.taxon_map.priority
           product_type = taxon.taxon_map.product_type
