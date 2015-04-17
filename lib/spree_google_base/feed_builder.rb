@@ -5,11 +5,12 @@ module SpreeGoogleBase
   class FeedBuilder
     include Spree::Core::Engine.routes.url_helpers
 
-    attr_reader :store, :domain, :title
+    attr_reader :store, :domain, :title, :format
 
-    def self.generate_and_transfer
+    def self.generate_and_transfer(format)
+      raise "Invalid format specified! Supported formats: xml, txt" unless format == 'txt' or format == 'xml'
       self.builders.each do |builder|
-        builder.generate_and_transfer_store
+        builder.generate_and_transfer_store(format)
       end
     end
 
@@ -59,15 +60,20 @@ module SpreeGoogleBase
       end
     end
 
-    def generate_and_transfer_store
-      delete_xml_if_exists
+    def generate_and_transfer_store(format)
+      @format = format
+      delete_file_if_exists
 
       File.open(path, 'w') do |file|
-        generate_xml file
+        if @format == 'xml'
+          generate_xml file
+        else
+          file.write(generate_txt)
+        end
       end
 
-      transfer_xml
-      cleanup_xml
+      transfer_file
+      cleanup_file
     end
 
     def path
@@ -80,10 +86,10 @@ module SpreeGoogleBase
     end
 
     def filename
-      @filename ||= "google_base_v#{@store.try(:code)}.xml"
+      @filename ||= "google_base_v#{@store.try(:code)}.#{@format}"
     end
 
-    def delete_xml_if_exists
+    def delete_file_if_exists
       File.delete(path) if File.exists?(path)
     end
 
@@ -113,7 +119,7 @@ module SpreeGoogleBase
       end
     end
 
-    def transfer_xml
+    def transfer_file
       raise "Please configure your Google Base :ftp_username and :ftp_password by configuring Spree::GoogleBase::Config" unless
         Spree::GoogleBase::Config[:ftp_username] and Spree::GoogleBase::Config[:ftp_password]
 
@@ -124,7 +130,7 @@ module SpreeGoogleBase
       ftp.quit
     end
 
-    def cleanup_xml
+    def cleanup_file
       File.delete(path)
     end
 

@@ -1,8 +1,10 @@
 require 'net/ftp'
 
 namespace :spree_google_base do
-  task :generate_and_transfer => [:environment] do |t, args|
-    SpreeGoogleBase::FeedBuilder.generate_and_transfer
+  desc "Generate and transfer product feed in specified format. Formats: xml, tab separated txt"
+  task :generate_and_transfer, [:format] => [:environment] do |t, args|
+    raise 'Invalid format specified! Supported formats: xml, txt.' unless args[:format] == 'txt' or args[:format] == 'xml'
+    SpreeGoogleBase::FeedBuilder.generate_and_transfer(args[:format])
   end
 
   desc "Generate test product feed file in specified format. Formats: xml, tab separated txt"
