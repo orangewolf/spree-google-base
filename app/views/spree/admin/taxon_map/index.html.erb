@@ -15,7 +15,7 @@
       </tr>
       <% @taxons.each do |taxon| -%>
         <tr>
-          <td><%= taxon.name %></td>
+          <td><%= taxon.self_and_ancestors.map(&:name).join(' > ') %></td>
           <td><%= text_field(:priority, taxon.id, :value => taxon.taxon_map.priority.to_s, :class => 'priority') %></td>
           <td><%= text_field(:tax_id, taxon.id, :value => taxon.taxon_map.product_type, :class => 'category') %></td>
         </tr>
