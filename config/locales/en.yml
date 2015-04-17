@@ -5,6 +5,7 @@ en:
       title: "Title"
       public_domain: "Public Domain"
       description: "Description"
+      ftp_server: "FTP server"
       ftp_username: "FTP user name"
       ftp_password: "FTP password"
       manage_taxon_mapping: "Manage taxon mapping"

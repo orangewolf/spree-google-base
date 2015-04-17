@@ -3,7 +3,7 @@
 <% end %>
 
 <table class="table">
-  <% [:title, :public_domain, :description, :ftp_username].each do |setting| %>
+  <% [:title, :public_domain, :description, :ftp_server, :ftp_username].each do |setting| %>
     <%= setting_presentation_row(setting) %>
   <% end %>
   <%= setting_presentation_row(:ftp_password, true) %>
