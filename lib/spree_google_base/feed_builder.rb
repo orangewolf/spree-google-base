@@ -111,7 +111,9 @@ module SpreeGoogleBase
     def generate_txt
       csv_string = CSV.generate(col_sep: "\t") do |csv|
         # Header row
-        csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + ["link", "image_link", "additional_image_link"]
+        additional_attrs = ["link", "image_link"]
+        additional_attrs += ["additional_image_link"] if Spree::GoogleBase::Config[:enable_additional_images]
+        csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + additional_attrs
         # variants
         ar_scope.find_each(:batch_size => 300) do |variant|
           csv << build_variant_txt(variant)
@@ -183,7 +185,7 @@ module SpreeGoogleBase
         main_image = variant.images.first
       end
 
-      return [] unless main_image
+      return Spree::GoogleBase::Config[:enable_additional_images] ? ["",""] : [""] unless main_image
       images << image_url(variant, main_image)
 
       if Spree::GoogleBase::Config[:enable_additional_images]
