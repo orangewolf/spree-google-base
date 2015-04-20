@@ -4,6 +4,7 @@ module Spree
     preference :store_name, :string, :default => ''
     preference :description, :text, :default => ''
     preference :ftp_server, :string, :default => 'uploads.google.com'
+    preference :ftp_directory, :string, :default => '/'
     preference :ftp_username, :string, :default => ''
     preference :ftp_password, :password, :default => ''
     preference :enable_taxon_mapping, :boolean, :default => false

@@ -126,6 +126,7 @@ module SpreeGoogleBase
       ftp = Net::FTP.new(Spree::GoogleBase::Config[:ftp_server])
       ftp.passive = true
       ftp.login(Spree::GoogleBase::Config[:ftp_username], Spree::GoogleBase::Config[:ftp_password])
+      ftp.chdir(Spree::GoogleBase::Config[:ftp_directory])
       ftp.put(path, filename)
       ftp.quit
     end

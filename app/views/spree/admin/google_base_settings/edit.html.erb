@@ -3,7 +3,7 @@
 <% end %>
 
 <%= form_tag(admin_google_base_settings_path, :method => :put) do |f| %>
-  <% [:title, :public_domain, :description, :ftp_server, :ftp_username,
+  <% [:title, :public_domain, :description, :ftp_server, :ftp_directory, :ftp_username,
       :ftp_password, :enable_taxon_mapping].each do |setting| %>
     <p><%= setting_field(setting) %></p>
   <% end %>
