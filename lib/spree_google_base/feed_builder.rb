@@ -5,6 +5,9 @@ module SpreeGoogleBase
   class FeedBuilder
     include Spree::Core::Engine.routes.url_helpers
 
+    GOOGLE_BASE_ADDITIONAL_ATTRS = %w[link image_link]
+    GOOGLE_BASE_ADDITIONAL_ATTRS <<  "additional_image_link" if Spree::GoogleBase::Config[:enable_additional_images]
+
     attr_reader :store, :domain, :title, :format
 
     def self.generate_and_transfer(format)
@@ -106,9 +109,7 @@ module SpreeGoogleBase
       csv = CSV.new(output, col_sep: "\t")
 
       # Header row
-      additional_attrs = ["link", "image_link"]
-      additional_attrs += ["additional_image_link"] if Spree::GoogleBase::Config[:enable_additional_images]
-      csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + additional_attrs
+      csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + GOOGLE_BASE_ADDITIONAL_ATTRS
 
       # variants
       ar_scope.find_each(:batch_size => 300) do |variant|
@@ -134,8 +135,15 @@ module SpreeGoogleBase
 
     def build_variant_xml(xml, variant)
       xml.item do
-        xml.tag!('link', product_url(variant.slug, :host => domain))
-        build_images_xml(xml, variant)
+        GOOGLE_BASE_ADDITIONAL_ATTRS.each do |attribute|
+          if attribute == "link"
+            xml.tag!('link', product_url(variant.slug, :host => domain))
+          elsif attribute == "image_link"
+            build_image_xml(xml, variant)
+          elsif attribute == "additional_image_link"
+            build_additional_images_xml(xml, variant)
+          end
+        end
 
         GOOGLE_BASE_ATTR_MAP.each do |k, v|
           value = variant.send(v)
@@ -150,39 +158,51 @@ module SpreeGoogleBase
         value = variant.send(v)
         attr_array << value
       end
-      attr_array << product_url(variant.slug, :host => domain)
-      attr_array.concat(build_images_txt(variant))
+      GOOGLE_BASE_ADDITIONAL_ATTRS.each do |attribute|
+        if attribute == "link"
+          attr_array << product_url(variant.slug, :host => domain)
+        elsif attribute == "image_link"
+          attr_array << build_image_txt(variant)
+        elsif attribute == "additional_image_link"
+          attr_array << bulid_additional_images_txt(variant)
+        end
+      end
       return attr_array
     end
 
-    def build_images_xml(xml, variant)
-      main_image, *more_images = variant.images
+    def build_image_xml(xml, variant)
+      main_image = variant.images.first
 
       return unless main_image
       xml.tag!('g:image_link', image_url(variant, main_image))
 
-      if Spree::GoogleBase::Config[:enable_additional_images]
-        more_images.each do |image|
-          xml.tag!('g:additional_image_link', image_url(variant, image))
-        end
+    end
+
+    def build_additional_images_xml(xml, variant)
+      more_images = variant.images[1..-1]
+
+      return unless more_images
+      more_images.each do |image|
+        xml.tag!('g:additional_image_link', image_url(variant, image))
       end
     end
 
-    def build_images_txt(variant)
+    def build_image_txt(variant)
+      main_image = variant.images.first
+
+      return unless main_image
+      image_url(variant, main_image)
+    end
+
+    def bulid_additional_images_txt(variant)
+      more_images = variant.images[1..-1]
+
+      return unless more_images
       images = []
-      main_image, *more_images = variant.images
-
-      return Spree::GoogleBase::Config[:enable_additional_images] ? ["",""] : [""] unless main_image
-      images << image_url(variant, main_image)
-
-      if Spree::GoogleBase::Config[:enable_additional_images]
-        additional_images = []
-        more_images.each do |image|
-          additional_images << image_url(variant, image)
-        end
-        images << additional_images.join(',')
+      more_images.each do |image|
+        images << image_url(variant, image)
       end
-      return images
+      images.join(',')
     end
 
     def image_url(variant, image)
