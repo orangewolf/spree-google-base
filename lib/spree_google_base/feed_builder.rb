@@ -8,28 +8,21 @@ module SpreeGoogleBase
     attr_reader :store, :domain, :title, :format
 
     def self.generate_and_transfer(format)
-      raise "Invalid format specified! Supported formats: xml, txt" unless format == 'txt' or format == 'xml'
+      raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
       self.builders.each do |builder|
-        builder.generate_and_transfer_store(format)
+        builder.instance_variable_set("@format", format)
+        builder.generate_and_transfer_store
       end
     end
 
     def self.generate_test_file(filename)
+      format = filename.split('.')[-1]
+      raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
       exporter = new
       exporter.instance_variable_set("@filename", filename)
-      format = filename.split('.')[-1]
-      if format == "xml"
-        File.open(exporter.path, "w") do |file|
-          exporter.generate_xml file
-        end
-      elsif format == "txt"
-        File.open(exporter.path, "w") do |file|
-          file.write(exporter.generate_txt)
-        end
-      else
-        raise "Invalid format specified! Supported formats: xml, txt"
-      end
-      exporter.path
+      exporter.instance_variable_set("@format", format)
+      exporter.generate_file
+      return exporter.path
     end
 
     def self.builders
@@ -60,18 +53,9 @@ module SpreeGoogleBase
       end
     end
 
-    def generate_and_transfer_store(format)
-      @format = format
+    def generate_and_transfer_store
       delete_file_if_exists
-
-      File.open(path, 'w') do |file|
-        if @format == 'xml'
-          generate_xml file
-        else
-          file.write(generate_txt)
-        end
-      end
-
+      generate_file
       transfer_file
       cleanup_file
     end
@@ -93,6 +77,16 @@ module SpreeGoogleBase
       File.delete(path) if File.exists?(path)
     end
 
+    def generate_file
+      File.open(path, "w") do |file|
+        if @format == "xml"
+          generate_xml file
+        elsif @format == "txt"
+          generate_txt file
+        end
+      end
+    end
+
     def generate_xml output
       xml = Builder::XmlMarkup.new(:target => output)
       xml.instruct!
@@ -108,16 +102,17 @@ module SpreeGoogleBase
       end
     end
 
-    def generate_txt
-      csv_string = CSV.generate(col_sep: "\t") do |csv|
-        # Header row
-        additional_attrs = ["link", "image_link"]
-        additional_attrs += ["additional_image_link"] if Spree::GoogleBase::Config[:enable_additional_images]
-        csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + additional_attrs
-        # variants
-        ar_scope.find_each(:batch_size => 300) do |variant|
-          csv << build_variant_txt(variant)
-        end
+    def generate_txt output
+      csv = CSV.new(output, col_sep: "\t")
+
+      # Header row
+      additional_attrs = ["link", "image_link"]
+      additional_attrs += ["additional_image_link"] if Spree::GoogleBase::Config[:enable_additional_images]
+      csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + additional_attrs
+
+      # variants
+      ar_scope.find_each(:batch_size => 300) do |variant|
+        csv << build_variant_txt(variant)
       end
     end
 
