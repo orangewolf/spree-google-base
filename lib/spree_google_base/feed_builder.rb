@@ -156,11 +156,7 @@ module SpreeGoogleBase
     end
 
     def build_images_xml(xml, variant)
-      if Spree::GoogleBase::Config[:enable_additional_images]
-        main_image, *more_images = variant.images
-      else
-        main_image = variant.images.first
-      end
+      main_image, *more_images = variant.images
 
       return unless main_image
       xml.tag!('g:image_link', image_url(variant, main_image))
@@ -174,11 +170,7 @@ module SpreeGoogleBase
 
     def build_images_txt(variant)
       images = []
-      if Spree::GoogleBase::Config[:enable_additional_images]
-        main_image, *more_images = variant.images
-      else
-        main_image = variant.images.first
-      end
+      main_image, *more_images = variant.images
 
       return Spree::GoogleBase::Config[:enable_additional_images] ? ["",""] : [""] unless main_image
       images << image_url(variant, main_image)
