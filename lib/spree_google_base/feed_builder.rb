@@ -98,7 +98,7 @@ module SpreeGoogleBase
         xml.channel do
           build_meta(xml)
 
-          ar_scope.find_each(:batch_size => 300) do |variant|
+          ar_scope.each do |variant|
             build_variant_xml(xml, variant)
           end
         end
@@ -112,7 +112,7 @@ module SpreeGoogleBase
       csv << GOOGLE_BASE_ATTR_MAP.map { |row| row[0] } + GOOGLE_BASE_ADDITIONAL_ATTRS
 
       # variants
-      ar_scope.find_each(:batch_size => 300) do |variant|
+      ar_scope.each do |variant|
         csv << build_variant_txt(variant)
       end
     end
@@ -171,7 +171,7 @@ module SpreeGoogleBase
     end
 
     def build_image_xml(xml, variant)
-      main_image = variant.images.first
+      main_image = get_main_image(variant)
 
       return unless main_image
       xml.tag!('g:image_link', image_url(variant, main_image))
@@ -179,7 +179,7 @@ module SpreeGoogleBase
     end
 
     def build_additional_images_xml(xml, variant)
-      more_images = variant.images[1..-1]
+      more_images = get_additional_images(variant)
 
       return unless more_images
       more_images.each do |image|
@@ -188,14 +188,14 @@ module SpreeGoogleBase
     end
 
     def build_image_txt(variant)
-      main_image = variant.images.first
+      main_image = get_main_image(variant)
 
       return unless main_image
       image_url(variant, main_image)
     end
 
     def bulid_additional_images_txt(variant)
-      more_images = variant.images[1..-1]
+      more_images = get_additional_images(variant)
 
       return unless more_images
       images = []
@@ -203,6 +203,18 @@ module SpreeGoogleBase
         images << image_url(variant, image)
       end
       images.join(',')
+    end
+
+    def get_main_image(variant)
+      main_image = variant.images.first
+      return variant.product.images.first unless main_image
+      return main_image
+    end
+
+    def get_additional_images(variant)
+      more_images = variant.images[1..-1]
+      return variant.product.images[1..-1] unless more_images
+      return more_images
     end
 
     def image_url(variant, image)

@@ -1,6 +1,7 @@
 module Spree
   Variant.class_eval do
-    scope :google_base_scope, -> { preload({:product => :taxons}, {:product => {:master => :images}}) }
+
+    scope :google_base_scope, -> { preload({:product => :taxons}, {:product => {:master => :images}}).reject{ |variant| variant.product.variants.count > 1 and variant.is_master? } }
 
     def google_base_description
       description
