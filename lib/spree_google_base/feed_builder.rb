@@ -78,10 +78,11 @@ module SpreeGoogleBase
 
     def generate_file
       File.open(path, "w") do |file|
-        if @format == "xml"
+        case
+        when @format == "xml"
           generate_xml file
           path
-        elsif @format == "txt"
+        when @format == "txt"
           generate_txt file
           path
         end
@@ -134,12 +135,10 @@ module SpreeGoogleBase
     def build_variant_xml(xml, variant)
       xml.item do
         GOOGLE_BASE_ADDITIONAL_ATTRS.each do |attribute|
-          if attribute == "link"
-            xml.tag!('link', product_url(variant.slug, :host => domain))
-          elsif attribute == "image_link"
-            build_image_xml(xml, variant)
-          elsif attribute == "additional_image_link"
-            build_additional_images_xml(xml, variant)
+          case
+          when attribute == "link" then xml.tag!('link', product_url(variant.slug, :host => domain))
+          when attribute == "image_link" then build_image_xml(xml, variant)
+          when attribute == "additional_image_link" then build_additional_images_xml(xml, variant)
           end
         end
 
@@ -157,12 +156,10 @@ module SpreeGoogleBase
         attr_array << value
       end
       GOOGLE_BASE_ADDITIONAL_ATTRS.each do |attribute|
-        if attribute == "link"
-          attr_array << product_url(variant.slug, :host => domain)
-        elsif attribute == "image_link"
-          attr_array << build_image_txt(variant)
-        elsif attribute == "additional_image_link"
-          attr_array << bulid_additional_images_txt(variant)
+        case
+        when attribute == "link" then attr_array << product_url(variant.slug, :host => domain)
+        when attribute == "image_link" then attr_array << build_image_txt(variant)
+        when attribute == "additional_image_link" then attr_array << bulid_additional_images_txt(variant)
         end
       end
       return attr_array
