@@ -11,14 +11,12 @@ module SpreeGoogleBase
     attr_reader :store, :domain, :title, :format
 
     def self.generate_and_transfer(format)
-      raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
       self.builders(format).each do |builder|
         builder.generate_and_transfer_store
       end
     end
 
     def self.generate_test_file(format)
-      raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
       exporter = new(format: format)
       exporter.generate_file
     end
@@ -34,10 +32,11 @@ module SpreeGoogleBase
     def initialize(opts = {})
       raise "Please pass a public address as the second argument, or configure :public_path in Spree::GoogleBase::Config" unless
         opts[:store].present? or (opts[:path].present? or Spree::GoogleBase::Config[:public_domain])
+      raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? opts[:format]
 
+      @format = opts[:format]
       @store = opts[:store] if opts[:store].present?
       @title = @store ? @store.name : Spree::GoogleBase::Config[:store_name]
-      @format = opts[:format] if opts[:format].present?
 
       @domain = @store ? @store.domains.match(/[\w\.]+/).to_s : opts[:path]
       @domain ||= Spree::GoogleBase::Config[:public_domain]
