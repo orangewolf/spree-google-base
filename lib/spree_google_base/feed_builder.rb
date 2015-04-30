@@ -12,24 +12,22 @@ module SpreeGoogleBase
 
     def self.generate_and_transfer(format)
       raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
-      self.builders.each do |builder|
-        builder.instance_variable_set("@format", format)
+      self.builders(format).each do |builder|
         builder.generate_and_transfer_store
       end
     end
 
     def self.generate_test_file(format)
       raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
-      exporter = new
-      exporter.instance_variable_set("@format", format)
+      exporter = new(format: format)
       exporter.generate_file
     end
 
-    def self.builders
+    def self.builders(format)
       if defined?(Spree::Store)
-        Spree::Store.all.map{ |store| self.new(:store => store) }
+        Spree::Store.all.map{ |store| self.new(store: store, format: format) }
       else
-        [self.new]
+        [self.new(format: format)]
       end
     end
 
@@ -39,6 +37,7 @@ module SpreeGoogleBase
 
       @store = opts[:store] if opts[:store].present?
       @title = @store ? @store.name : Spree::GoogleBase::Config[:store_name]
+      @format = opts[:format] if opts[:format].present?
 
       @domain = @store ? @store.domains.match(/[\w\.]+/).to_s : opts[:path]
       @domain ||= Spree::GoogleBase::Config[:public_domain]
@@ -89,7 +88,7 @@ module SpreeGoogleBase
       end
     end
 
-    def generate_xml output
+    def generate_xml(output)
       xml = Builder::XmlMarkup.new(:target => output)
       xml.instruct!
 
@@ -104,7 +103,7 @@ module SpreeGoogleBase
       end
     end
 
-    def generate_txt output
+    def generate_txt(output)
       csv = CSV.new(output, col_sep: "\t")
 
       # Header row
