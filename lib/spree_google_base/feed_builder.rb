@@ -79,14 +79,11 @@ module SpreeGoogleBase
     def generate_file
       File.open(path, "w") do |file|
         case
-        when @format == "xml"
-          generate_xml file
-          path
-        when @format == "txt"
-          generate_txt file
-          path
+        when @format == "xml" then generate_xml file
+        when @format == "txt" then generate_txt file
         end
       end
+      path
     end
 
     def generate_xml(output)
