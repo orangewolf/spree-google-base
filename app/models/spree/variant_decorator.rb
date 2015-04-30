@@ -1,7 +1,18 @@
 module Spree
   Variant.class_eval do
 
-    scope :google_base_scope, -> { preload({:product => :taxons}, {:product => {:master => :images}}).reject{ |variant| variant.product.variants.count > 1 and variant.is_master? } }
+    def self.google_base_scope
+      where_sql = '
+        is_master = false
+        or product_id in (
+          select p.id
+          from spree_products p
+          join spree_variants v on v.product_id = p.id
+          group by p.id
+          having count(v.id) <= 1
+        )'
+      Spree::Variant.includes(product: [:taxons, master: :images]).where(where_sql)
+    end
 
     def google_base_description
       description
