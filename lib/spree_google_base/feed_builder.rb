@@ -25,7 +25,6 @@ module SpreeGoogleBase
       exporter.instance_variable_set("@filename", filename)
       exporter.instance_variable_set("@format", format)
       exporter.generate_file
-      return exporter.path
     end
 
     def self.builders
@@ -84,8 +83,10 @@ module SpreeGoogleBase
       File.open(path, "w") do |file|
         if @format == "xml"
           generate_xml file
+          path
         elsif @format == "txt"
           generate_txt file
+          path
         end
       end
     end
@@ -206,15 +207,11 @@ module SpreeGoogleBase
     end
 
     def get_main_image(variant)
-      main_image = variant.images.first
-      return variant.product.images.first unless main_image
-      return main_image
+      variant.images.first || variant.product.images.first
     end
 
     def get_additional_images(variant)
-      more_images = variant.images[1..-1]
-      return variant.product.images[1..-1] unless more_images
-      return more_images
+      variant.images[1..-1] || variant.product.images[1..-1]
     end
 
     def image_url(variant, image)
