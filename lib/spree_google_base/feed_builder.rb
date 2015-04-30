@@ -18,11 +18,9 @@ module SpreeGoogleBase
       end
     end
 
-    def self.generate_test_file(filename)
-      format = filename.split('.')[-1]
+    def self.generate_test_file(format)
       raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? format
       exporter = new
-      exporter.instance_variable_set("@filename", filename)
       exporter.instance_variable_set("@format", format)
       exporter.generate_file
     end

@@ -12,7 +12,7 @@ namespace :spree_google_base do
   task :generate_test_file, [:format] => [:environment] do |t, args|
     raise 'Invalid format specified! Supported formats: xml, txt.' unless %w[txt xml].include? args[:format]
     puts "Dumping product catalog as #{args[:format]}."
-    file_path = SpreeGoogleBase::FeedBuilder.generate_test_file("google_base_products.#{args[:format]}")
+    file_path = SpreeGoogleBase::FeedBuilder.generate_test_file(args[:format])
     puts "Finished dumping product catalog as #{args[:format]}. See it at [#{file_path}]."
   end
 end
