@@ -3,7 +3,7 @@ module Spree
 
     def self.google_base_scope
       where_sql = '
-        is_master = false
+        is_master = ?
         or product_id in (
           select p.id
           from spree_products p
@@ -11,7 +11,7 @@ module Spree
           group by p.id
           having count(v.id) <= 1
         )'
-      Spree::Variant.includes(product: [:taxons, master: :images]).where(where_sql)
+      Spree::Variant.includes(product: [:taxons, master: :images]).where(where_sql, false)
     end
 
     def google_base_description
@@ -64,6 +64,24 @@ module Spree
 
     def total_count_on_hand
       stock_items.sum(:count_on_hand)
+    end
+
+    def google_base_item_group_id
+      product.id if product.has_variants?
+    end
+
+    def google_base_color
+      option_values.each do |ov|
+        return ov.presentation if ov.option_type.name =~ /color/i
+      end
+      ''
+    end
+
+    def google_base_size
+      option_values.each do |ov|
+        return ov.presentation if ov.option_type.name =~ /(length|size)/i
+      end
+      ''
     end
   end
 end
