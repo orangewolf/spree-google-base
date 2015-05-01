@@ -31,7 +31,7 @@ ADVANCED CONFIGURATION
 ------------
 
 You can modify fields set for export and list of 'g:' attributes. Just create\modify config/initializers/google_base.rb and override values of GOOGLE_BASE_ATTR_MAP and GOOGLE_BASE_FILTERED_ATTRS arrays with help of Array#delete, Array#delete_at, Array#<<, Array#+=, etc.
-Also you can override methods from product_decorator.rb in your site extension.
+Also you can override methods from variant_decorator.rb in your site extension.
 
 
 CRONJOBS

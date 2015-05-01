@@ -1,17 +1,23 @@
 require 'net/ftp'
 
 namespace :spree_google_base do
+  desc "Generate product feed"
   task :generate => [:environment] do |t, args|
     SpreeGoogleBase::FeedBuilder.generate
   end
 
-  task :generate_and_transfer => [:environment] do |t, args|
-    SpreeGoogleBase::FeedBuilder.generate_and_transfer
+  desc "Generate and transfer product feed in specified format. Formats: xml, txt"
+  task :generate_and_transfer, [:format] => [:environment] do |t, args|
+    args.with_defaults(format: 'xml')
+    SpreeGoogleBase::FeedBuilder.generate_and_transfer(args[:format])
+    puts "Product catalog sent."
   end
 
-  task :generate_test_file => [:environment] do |t, args|
-    puts "Dumping product catalog as Google Base XML"
-    file_path = SpreeGoogleBase::FeedBuilder.generate_test_file("google_base_products.xml")
-    puts "Finished dumping product catalog as Google Base XML. See it at [#{file_path}]."
+  desc "Generate test product feed file in specified format. Formats: xml, txt"
+  task :generate_test_file, [:format] => [:environment] do |t, args|
+    args.with_defaults(format: 'xml')
+    puts "Dumping product catalog as #{args[:format]}."
+    file_path = SpreeGoogleBase::FeedBuilder.generate_test_file(args[:format])
+    puts "Finished dumping product catalog as #{args[:format]}. See it at [#{file_path}]."
   end
 end
