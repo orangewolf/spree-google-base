@@ -42,24 +42,27 @@ module Spree
       pp ? pp.value : nil
     end
 
-    def google_base_product_type
-      return google_base_taxon_type unless Spree::GoogleBase::Config[:enable_taxon_mapping]
+    def google_base_product_category
+      return google_base_product_type unless Spree::GoogleBase::Config[:enable_taxon_mapping]
 
-      product_type = ''
+      product_category = ''
       priority = -1000
       product.taxons.each do |taxon|
         if taxon.taxon_map && taxon.taxon_map.priority > priority
           priority = taxon.taxon_map.priority
-          product_type = taxon.taxon_map.product_type
+          product_category = taxon.taxon_map.product_type
         end
       end
-      product_type
+      product_category
     end
 
-    def google_base_taxon_type
-      return unless product.taxons.any?
-
-      product.taxons[0].self_and_ancestors.map(&:name).join(" > ")
+    def google_base_product_type
+      product.taxons.each do |taxon|
+        if taxon.root.name != 'Brand' and taxon.root.name != 'Tags'
+          return taxon.self_and_ancestors.map(&:name).join(" > ")
+        end
+      end
+      ''
     end
 
     def total_count_on_hand
