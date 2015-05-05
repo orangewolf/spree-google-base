@@ -22,7 +22,7 @@ module SpreeGoogleBase
     end
 
     def self.builders(format)
-      if defined?(Spree::Store)
+      if defined?(Spree::Store) && Spree::Store.respond_to?(:domains)
         Spree::Store.all.map{ |store| self.new(store: store, format: format) }
       else
         [self.new(format: format)]
