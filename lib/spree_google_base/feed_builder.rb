@@ -157,7 +157,7 @@ module SpreeGoogleBase
         case
         when attribute == "link" then attr_array << product_url(variant.slug, :host => domain)
         when attribute == "image_link" then attr_array << build_image_txt(variant)
-        when attribute == "additional_image_link" then attr_array << bulid_additional_images_txt(variant)
+        when attribute == "additional_image_link" then attr_array << build_additional_images_txt(variant)
         end
       end
       return attr_array
@@ -187,7 +187,7 @@ module SpreeGoogleBase
       image_url(variant, main_image)
     end
 
-    def bulid_additional_images_txt(variant)
+    def build_additional_images_txt(variant)
       more_images = get_additional_images(variant)
 
       return unless more_images
@@ -208,9 +208,7 @@ module SpreeGoogleBase
 
     def image_url(variant, image)
       base_url = image.attachment.url(variant.google_base_image_size)
-      if Spree::Image.attachment_definitions[:attachment][:storage] != :s3
-        base_url = "#{domain}#{base_url}"
-      end
+      base_url = domain + base_url unless base_url.starts_with?("http")
 
       base_url
     end
