@@ -68,7 +68,7 @@ module SpreeGoogleBase
     end
 
     def filename
-      @filename ||= "google_base_v#{@store.try(:code)}.#{@format}"
+      @filename ||= "google_base_v#{@store.try(:code)}.#{@format}.gz"
     end
 
     def delete_file_if_exists
@@ -76,11 +76,13 @@ module SpreeGoogleBase
     end
 
     def generate_file
-      File.open(path, "w") do |file|
+      File.open(path, "wb") do |file|
+        gz = Zlib::GzipWriter.new(file)
         case
-        when @format == "xml" then generate_xml file
-        when @format == "txt" then generate_txt file
+        when @format == "xml" then generate_xml gz
+        when @format == "txt" then generate_txt gz
         end
+        gz.close
       end
       path
     end
@@ -120,7 +122,7 @@ module SpreeGoogleBase
       ftp.passive = true
       ftp.login(Spree::GoogleBase::Config[:ftp_username], Spree::GoogleBase::Config[:ftp_password])
       ftp.chdir(Spree::GoogleBase::Config[:ftp_directory])
-      ftp.put(path, filename)
+      ftp.putbinaryfile(path, filename)
       ftp.quit
     end
 
