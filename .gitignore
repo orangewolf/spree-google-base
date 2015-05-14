@@ -4,3 +4,4 @@ spec/dummy/*
 /.generators
 /.rakeTasks
 /*.iml
+*~HEAD
