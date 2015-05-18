@@ -34,12 +34,13 @@ module Spree
       # Taken from github.com/romul/spree-solr-search
       # app/models/spree/product_decorator.rb
       #
-      pp = Spree::ProductProperty.joins(:property)
-                                 .where(:product_id => self.id)
-                                 .where(:spree_properties => {:name => 'brand'})
-                                 .first
-
-      pp ? pp.value : nil
+      # pp = Spree::ProductProperty.joins(:property)
+      #                            .where(:product_id => self.id)
+      #                            .where(:spree_properties => {:name => 'brand'})
+      #                            .first
+      #
+      # pp ? pp.value : nil
+      product.property('brand')
     end
 
     def google_base_product_category
@@ -72,6 +73,11 @@ module Spree
     def google_base_item_group_id
       product.id if product.has_variants?
     end
+
+    def google_base_age_group
+      product.property('age_group')
+    end
+
 
     def google_base_color
       option_values.each do |ov|

@@ -20,6 +20,7 @@ module SpreeGoogleBase
         ['g:availability', 'google_base_availability'],
         ['g:shipping_weight', 'weight'],
         ['g:item_group_id', 'google_base_item_group_id'],
+        ['g:age_group', 'google_base_age_group'],
         ['g:color', 'google_base_color'],
         ['g:size', 'google_base_size'],
       ]
