@@ -48,7 +48,7 @@ module Spree
       product_category = ''
       priority = -1000
       product.taxons.each do |taxon|
-        if taxon.taxon_map && taxon.taxon_map.priority > priority
+        if taxon.root.name != 'Brand' and taxon.root.name != 'Tags' && taxon.taxon_map && taxon.taxon_map.priority > priority && taxon.taxon_map.product_type.present?
           priority = taxon.taxon_map.priority
           product_category = taxon.taxon_map.product_type
         end
