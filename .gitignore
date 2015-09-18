@@ -5,3 +5,4 @@ spec/dummy/*
 /.rakeTasks
 /*.iml
 *~HEAD
+/.ruby*
