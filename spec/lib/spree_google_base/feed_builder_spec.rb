@@ -5,8 +5,8 @@ describe SpreeGoogleBase::FeedBuilder do
   describe 'as class' do
     context '#builders should return an array for each store' do
       Spree::Store.delete_all
-      Factory :store, :domains => 'www.mystore.com', :code => 'first', :name => 'Goodies, LLC'
-      Factory :store, :domains => 'www.anotherstore.com', :code => 'second', :name => 'Gifts, LLC'
+      FactoryGirl.build(:store, :domains => 'www.mystore.com', :code => 'first', :name => 'Goodies, LLC')
+      FactoryGirl.build(:store, :domains => 'www.anotherstore.com', :code => 'second', :name => 'Gifts, LLC')
 
       builders = SpreeGoogleBase::FeedBuilder.builders
       builders.size.should == 2
