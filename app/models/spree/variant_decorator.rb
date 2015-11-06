@@ -75,22 +75,39 @@ module Spree
     end
 
     def google_base_age_group
-      product.property('age_group')
+      age = product.property('age_group')
+      age ||= product.property('age')
+      age ||= ''
+      age = age.downcase
+      case age
+        when "youth" then 'kids'
+        else age
+      end
     end
 
+    def google_base_gender
+      gender = product.property('gender')
+      gender ||= ''
+      gender = gender.downcase
+      case gender
+        when "men's" then 'male'
+        when "women's" then 'female'
+        else gender
+      end
+    end
 
     def google_base_color
       option_values.each do |ov|
         return ov.presentation if ov.option_type.name =~ /color/i
       end
-      ''
+      product.property('color')
     end
 
     def google_base_size
       option_values.each do |ov|
         return ov.presentation if ov.option_type.name =~ /(length|size)/i
       end
-      ''
+      product.property('size')
     end
   end
 end
