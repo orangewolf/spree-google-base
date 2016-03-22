@@ -26,6 +26,20 @@ module Spree
       total_on_hand > 0 ? 'in stock' : 'out of stock'
     end
 
+    def google_base_image
+      images.first || product.images.first
+    end
+
+    def google_base_image_link
+      if image = google_base_image
+        image_link = image.attachment.url(google_base_image_size)
+        image_link = Spree::GoogleBase::Config[:public_domain] + image_link unless image_link.starts_with?("http")
+        image_link
+      else
+        nil
+      end
+    end
+
     def google_base_image_size
       :large
     end
@@ -63,7 +77,6 @@ module Spree
           return taxon.self_and_ancestors.map(&:name).join(" > ")
         end
       end
-      ''
     end
 
     def total_count_on_hand

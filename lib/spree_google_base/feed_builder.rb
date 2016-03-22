@@ -32,6 +32,7 @@ module SpreeGoogleBase
     def initialize(opts = {})
       raise "Please pass a public address as the second argument, or configure :public_path in Spree::GoogleBase::Config" unless
         opts[:store].present? or (opts[:path].present? or Spree::GoogleBase::Config[:public_domain])
+      opts[:format] ||= 'xml'
       raise "Invalid format specified! Supported formats: xml, txt" unless %w[txt xml].include? opts[:format]
 
       @format = opts[:format]
@@ -199,7 +200,7 @@ module SpreeGoogleBase
     end
 
     def get_main_image(variant)
-      variant.images.first || variant.product.images.first
+      variant.google_base_image
     end
 
     def get_additional_images(variant)

@@ -5,11 +5,11 @@ describe SpreeGoogleBase::FeedBuilder do
   describe 'as class' do
     context '#builders should return an array for each store' do
       Spree::Store.delete_all
-      FactoryGirl.build(:store, :domains => 'www.mystore.com', :code => 'first', :name => 'Goodies, LLC')
-      FactoryGirl.build(:store, :domains => 'www.anotherstore.com', :code => 'second', :name => 'Gifts, LLC')
+      FactoryGirl.build(:store, :code => 'first', :name => 'Goodies, LLC')
+      Spree::GoogleBase::Config.set(:public_domain => 'http://mydomain.com')
 
-      builders = SpreeGoogleBase::FeedBuilder.builders
-      builders.size.should == 2
+      builders = SpreeGoogleBase::FeedBuilder.builders('xml')
+      builders.size.should == 1
     end
   end
 
@@ -22,11 +22,11 @@ describe SpreeGoogleBase::FeedBuilder do
        
         @builder = SpreeGoogleBase::FeedBuilder.new
         @xml = Builder::XmlMarkup.new(:target => @output, :indent => 2, :margin => 1)
-        @product = Factory(:product)
+        @product = FactoryGirl.create(:product)
       end
       
       it 'should include products in the output' do
-        @builder.build_product(@xml, @product)
+        @builder.build_variant_xml(@xml, @product.master)
         
         @output.should include(@product.name)
         @output.should include("products/#{@product.slug}")
@@ -41,51 +41,7 @@ describe SpreeGoogleBase::FeedBuilder do
       end
       
     end
-  
-    describe 'w/ store defined' do
-      before(:each) do
-        @store = Factory :store, :domains => 'www.mystore.com', :code => 'first', :name => 'Goodies, LLC'
-        @store2 = Factory :store, :domains => 'www.anotherstore.com', :code => 'second', :name => 'Gifts, LLC'
-        @builder = SpreeGoogleBase::FeedBuilder.new(:store => @store)
-      end
-      
-      it "should know its path relative to the store" do
-        @builder.path.should == "#{::Rails.root}/tmp/google_base_v#{@store.code}.xml"
-      end
-      
-      it "should initialize with the correct domain" do
-        @builder.domain.should == @store.domains.match(/[\w\.]+/).to_s 
-      end
-      
-      it "should initialize with the correct scope" do
-        @builder.ar_scope.to_sql.should == Spree::Product.by_store(@store).google_base_scope.scoped.to_sql
-      end
-      
-      it "should initialize with the correct title" do
-        @builder.title.should == @store.name
-      end
-      
-      it 'should include stores meta' do
-        @xml = Builder::XmlMarkup.new(:target => @output, :indent => 2, :margin => 1)
-        @product = Factory(:product)
-        
-        @builder.build_meta(@xml)
-        
-        @output.should =~ /#{@store.name}/
-        @output.should =~ /#{@store.domains}/
-      end
-      
-      it 'should include only the right products' do
-        @xml = Builder::XmlMarkup.new(:target => @output, :indent => 2, :margin => 1)
-        needed_product = Factory(:product, :stores => [@store])
-        wrong_product = Factory(:product, :stores => [@store2], :name => 'This does NOT belong in the first store')
-        
-        @builder.generate_xml @output
-        @output.should =~ /#{needed_product.name}/
-        @output.should_not =~ /#{wrong_product.name}/
-      end
-    end
-    
+
     describe 'w/out stores' do
       
       before(:each) do
@@ -96,7 +52,7 @@ describe SpreeGoogleBase::FeedBuilder do
       end
       
       it "should know its path" do
-        @builder.path.should == "#{::Rails.root}/tmp/google_base_v.xml"
+        @builder.path.to_s.should == "#{::Rails.root}/tmp/google_base_v.xml.gz"
       end
       
       it "should initialize with the correct domain" do
@@ -104,7 +60,7 @@ describe SpreeGoogleBase::FeedBuilder do
       end
       
       it "should initialize with the correct scope" do
-        @builder.ar_scope.to_sql.should == Spree::Product.google_base_scope.scoped.to_sql
+        @builder.ar_scope.to_sql.should == Spree::Variant.google_base_scope.to_sql
       end
       
       it "should initialize with the correct title" do
@@ -113,7 +69,7 @@ describe SpreeGoogleBase::FeedBuilder do
       
       it 'should include configured meta' do
         @xml = Builder::XmlMarkup.new(:target => @output, :indent => 2, :margin => 1)
-        @product = Factory(:product)
+        @product = FactoryGirl.create(:product)
         
         @builder.build_meta(@xml)
         

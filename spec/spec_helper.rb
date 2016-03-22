@@ -13,6 +13,7 @@ require 'rspec/rails'
 # in spec/support/ and its subdirectories.
 Dir[File.join(File.dirname(__FILE__), "support/**/*.rb")].each {|f| require f }
 
+require 'database_cleaner'
 require 'ffaker'
 # Requires factories defined in spree_core
 require 'spree/testing_support/factories'
@@ -35,5 +36,18 @@ RSpec.configure do |config|
   # examples within a transaction, comment the following line or assign false
   # instead of true.
   config.use_transactional_fixtures = true
+
+  config.filter_run :focus => true
+  config.run_all_when_everything_filtered = true
+
+  # Ensure Suite is set to use transactions for speed.
+  config.before :suite do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with :truncation
+  end
+  # After each spec clean the database.
+  config.after :each do
+    DatabaseCleaner.clean
+  end
 
 end

@@ -17,7 +17,8 @@ group :assets do
 end
 
 gem 'spree', '~> 3.0.0'
-gem 'spree_multi_domain', :git => 'git://github.com/spree/spree-multi-domain.git'
+gem 'spree_auth_devise', git: 'git://github.com/spree/spree_auth_devise.git', branch: '3-0-stable'
+# gem 'spree_multi_domain', :git => 'git://github.com/spree/spree-multi-domain.git'
 
 group :test do
   gem 'database_cleaner'
