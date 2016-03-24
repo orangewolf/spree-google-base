@@ -7,7 +7,6 @@ source 'http://rubygems.org'
 #  gem "ruby-debug19"
 #end
 
-gemspec
 
 group :assets do
   gem 'sass-rails'
@@ -24,3 +23,5 @@ group :test do
   gem 'database_cleaner'
   gem 'minitest'
 end
+
+gemspec
