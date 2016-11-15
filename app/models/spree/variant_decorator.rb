@@ -63,7 +63,7 @@ module Spree
       product_category = ''
       priority = -1000
       product.taxons.each do |taxon|
-        if !taxon.root.no_google_base && taxon.taxon_map && taxon.taxon_map.priority > priority && taxon.taxon_map.product_type.present?
+        if !taxon.taxonomy.no_google_base && taxon.taxon_map && taxon.taxon_map.priority > priority && taxon.taxon_map.product_type.present?
           priority = taxon.taxon_map.priority
           product_category = taxon.taxon_map.product_type
         end
@@ -73,7 +73,7 @@ module Spree
 
     def google_base_product_type
       product.taxons.each do |taxon|
-        if !taxon.root.no_google_base
+        if !taxon.taxonomy.no_google_base
           return taxon.self_and_ancestors.map(&:name).join(" > ")
         end
       end

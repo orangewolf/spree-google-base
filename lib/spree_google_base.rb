@@ -9,3 +9,4 @@ module Spree
 end
 
 require 'spree_google_base/engine'
+require 'spree/permitted_attributes_extra'

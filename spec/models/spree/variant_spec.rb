@@ -37,7 +37,7 @@ describe Spree::Variant do
       end
     end
 
-    context 'with enabled taxon mapping', :focus => true do
+    context 'with enabled taxon mapping' do
       before do
         Spree::GoogleBase::Config.set :enable_taxon_mapping => true
         taxon = FactoryGirl.create(:taxon)
@@ -49,7 +49,9 @@ describe Spree::Variant do
 
       context 'with taxonomy filtered' do
         before do
-          taxon.root.no_google_base = true
+          product.taxons.each do |t|
+            t.taxonomy.no_google_base = true
+          end
         end
         it 'should not have a product category' do
           product.master.google_base_product_category.should be_empty
