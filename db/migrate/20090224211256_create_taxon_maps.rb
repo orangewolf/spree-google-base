@@ -4,7 +4,7 @@ class CreateTaxonMaps < ActiveRecord::Migration
       t.integer :taxon_id
       t.string :product_type
       t.integer :priority
-      t.timestamps
+      t.timestamps null: true
     end
   end
 
