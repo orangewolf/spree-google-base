@@ -17,9 +17,24 @@ FactoryGirl.define do
     sku "ABC"
   end
 
+  factory :taxon_map, class: Spree::TaxonMap do
+    product_type 'Google Taxon Map'
+    priority 0
+  end
+
   # factory :store, class: Spree::Store do
   #   name 'My store'
   #   code 'my_store'
   #   domains 'www.example.com' # makes life simple, this is the default integration session domain
   # end
+end
+
+FactoryGirl.modify do
+  factory :taxon do
+    taxon_map
+  end
+
+  factory :taxonomy do
+    no_google_base false
+  end
 end
