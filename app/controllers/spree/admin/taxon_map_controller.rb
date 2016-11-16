@@ -3,8 +3,7 @@ module Spree
     class TaxonMapController < Spree::Admin::BaseController
 
       def index
-        @taxons = Spree::Taxon.all
-        @taxons.each do |taxon|
+        @taxons = Spree::Taxon.joins(:taxonomy).where({"spree_taxonomies.no_google_base" => false}).each do |taxon|
           if !taxon.taxon_map
             taxon_map = Spree::TaxonMap.new(:product_type => '', :taxon_id => taxon.id, :priority => 0)
             taxon_map.save

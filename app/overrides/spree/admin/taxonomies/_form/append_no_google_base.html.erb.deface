@@ -1,6 +1,7 @@
 <!--insert_bottom '[data-hook="admin_inside_taxonomy_form"]'-->
-<%= f.field_container :no_google_base, class: ['form-group'] do %>
-  <%= f.label :no_google_base, Spree.t(:no_google_base) %> <span class="required">*</span>
-  <%= f.check_box :no_google_base, :class => 'form-control' %>
+<!--original '1aff80204b820c05092832fb736248136fcae4c4'-->
+<%= f.field_container :no_google_base, class: ['form-check'] do %>
+  <%= f.check_box :no_google_base, :class => 'form-check-input' %>
+  <%= f.label :no_google_base, Spree.t("google_base.no_google_base") %> <span class="required">*</span>
   <%= f.error_message_on :no_google_base, :class => 'error-message' %>
 <% end %>
