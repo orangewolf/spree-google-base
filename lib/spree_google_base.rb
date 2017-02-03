@@ -9,4 +9,11 @@ module Spree
 end
 
 require 'spree_google_base/engine'
-require 'spree/permitted_attributes_extra'
+
+module Spree
+  module PermittedAttributes
+
+    @@taxonomy_attributes.concat [:no_google_base]
+
+  end
+end
