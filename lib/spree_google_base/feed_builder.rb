@@ -97,6 +97,7 @@ module SpreeGoogleBase
           build_meta(xml)
 
           ar_scope.each do |variant|
+	    next unless variant
             build_variant_xml(xml, variant)
           end
         end
@@ -208,7 +209,7 @@ module SpreeGoogleBase
     end
 
     def image_url(variant, image)
-      base_url = image.attachment.url(variant.google_base_image_size)
+      base_url = image.attachment.try(:url, variant.google_base_image_size) || ""
       base_url = domain + base_url unless base_url.starts_with?("http")
 
       base_url
