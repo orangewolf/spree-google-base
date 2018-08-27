@@ -1,10 +1,10 @@
 require 'net/ftp'
 
 namespace :spree_google_base do
-  # desc "Generate product feed"
-  # task :generate => [:environment] do |t, args|
-  #   SpreeGoogleBase::FeedBuilder.generate
-  # end
+  desc "Generate product feed"
+  task :generate => [:environment] do |t, args|
+    SpreeGoogleBase::FeedBuilder.generate
+  end
 
   desc "Generate and transfer product feed in specified format. Formats: xml, txt"
   task :generate_and_transfer, [:format] => [:environment] do |t, args|
